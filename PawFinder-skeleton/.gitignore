@@ -1,0 +1,43 @@
+# Secrets and environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+serviceAccountKey.json
+
+# Dependencies
+node_modules/
+vendor/
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Build output
+dist/
+build/
+out/
+.next/
+coverage/
+
+# Local database files
+data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# Logs
+*.log
+npm-debug.log*
+
+# Uploads (user photos should never be committed)
+uploads/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
