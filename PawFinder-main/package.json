@@ -1,0 +1,20 @@
+{
+  "name": "pawfinder",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PawFinder: reuniting lost pets with their families",
+  "workspaces": [
+    "src/server",
+    "src/client"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev -w src/server\" \"npm run dev -w src/client\"",
+    "build": "npm run build -w src/client",
+    "start": "npm run start -w src/server",
+    "db:init": "npm run db:init -w src/server",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
