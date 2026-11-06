@@ -60,22 +60,21 @@ The database enforces these rules: emails are unique, status must be one of the 
 | Method | Path | Purpose | Task |
 |---|---|---|---|
 | GET | `/api/health` | Confirms the API and database are working | SETUP-03 |
-| POST | `/api/auth/register` | Create an account | AUTH-01 |
+| POST | `/api/auth/register` | Create an account (name, email, password) | AUTH-01 |
 | POST | `/api/auth/login` | Log in | AUTH-02 |
 | POST | `/api/reports` | Create a report | REP-01 |
 
-Only the first endpoint exists so far. The rest are planned.
+`/api/health` and `/api/auth/register` exist so far. The rest are planned.
 
 ## Key design rules
 
 - Contact details stay private. Users reach each other only through in-app messages.
 - Only a report's author can edit, delete or resolve it.
 - Resolved reports are hidden from the active map and feed.
-- Passwords are always hashed. Secrets live in `.env`, never in git.
+- Passwords are always hashed with bcrypt (`bcryptjs`, cost 10, 8 to 72 bytes long). Secrets live in `.env`, never in git.
 - Distance filtering uses report latitude and longitude.
 
 ## Open questions
 
-- Which password hashing library will AUTH-01 use (for example bcrypt)?
 - Will login use sessions with cookies or JSON Web Tokens?
 - Will chat stay on polling or move to WebSockets?

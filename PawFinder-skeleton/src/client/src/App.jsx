@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import RegisterForm from './RegisterForm.jsx';
 
 export default function App() {
   const [api, setApi] = useState({ state: 'loading' });
+  const [registered, setRegistered] = useState(null);
 
   useEffect(() => {
     fetch('/api/health')
@@ -23,23 +25,25 @@ export default function App() {
       </header>
 
       <main className="card">
-        <h2>System status</h2>
-        {api.state === 'loading' && <p>Checking the server...</p>}
-        {api.state === 'ok' && (
-          <p className="ok">
-            API is running. {api.data.database.users} users and {api.data.database.reports} reports in the
-            database.
-          </p>
+        {registered ? (
+          <>
+            <h2>Welcome, {registered.name}!</h2>
+            <p className="ok">Your account is ready. Log in is coming in the next step.</p>
+          </>
+        ) : (
+          <RegisterForm onRegistered={setRegistered} />
         )}
+      </main>
+
+      <footer className="status">
+        {api.state === 'loading' && <p className="hint">Checking the server...</p>}
+        {api.state === 'ok' && <p className="hint">API is running.</p>}
         {api.state === 'error' && (
           <p className="error">
             Cannot reach the API ({api.message}). Start the app with <code>npm run dev</code>.
           </p>
         )}
-        <p className="hint">
-          This is the Sprint 1 skeleton. Login, report forms and the map are added by their own tasks.
-        </p>
-      </main>
+      </footer>
     </div>
   );
 }
