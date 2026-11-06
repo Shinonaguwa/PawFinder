@@ -165,3 +165,9 @@ button.secondary {
   color: var(--navy);
   cursor: pointer;
 }
+
+button.link.forgot {
+  align-self: flex-start;
+  font-weight: 400;
+  font-size: 0.9rem;
+}

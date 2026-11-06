@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react';
 import LoginForm from './LoginForm.jsx';
 import RegisterForm from './RegisterForm.jsx';
+import ForgotPasswordForm from './ForgotPasswordForm.jsx';
+import ResetPasswordForm from './ResetPasswordForm.jsx';
 import { api, clearToken, getToken } from './api.js';
+
+// The reset email links to /?reset=<token>.
+const resetToken = new URLSearchParams(window.location.search).get('reset');
 
 export default function App() {
   const [health, setHealth] = useState({ state: 'loading' });
   // undefined = still checking a saved session, null = logged out, object = logged in
   const [user, setUser] = useState(getToken() ? undefined : null);
-  const [view, setView] = useState('login'); // 'login' | 'register'
+  const [view, setView] = useState(resetToken ? 'reset' : 'login'); // 'login' | 'register' | 'forgot' | 'reset'
   const [notice, setNotice] = useState('');
   const [newEmail, setNewEmail] = useState('');
 
@@ -45,6 +50,20 @@ export default function App() {
     setUser(null);
   }
 
+  function handlePasswordChanged() {
+    // The server ended every old session, so drop the saved token too.
+    clearToken();
+    window.history.replaceState(null, '', window.location.pathname);
+    setUser(null);
+    setNotice('Password changed. Log in with your new password.');
+    setView('login');
+  }
+
+  function showLogin() {
+    setNotice('');
+    setView('login');
+  }
+
   function handleRegistered(created) {
     setNewEmail(created.email);
     setNotice('Account created. Log in to continue.');
@@ -52,6 +71,18 @@ export default function App() {
   }
 
   function renderMain() {
+    if (view === 'reset') {
+      return (
+        <ResetPasswordForm
+          token={resetToken}
+          onDone={handlePasswordChanged}
+          onRequestNew={() => {
+            window.history.replaceState(null, '', window.location.pathname);
+            setView('forgot');
+          }}
+        />
+      );
+    }
     if (user === undefined) return <p className="hint">Checking your session...</p>;
     if (user) {
       return (
@@ -63,6 +94,9 @@ export default function App() {
           </button>
         </>
       );
+    }
+    if (view === 'forgot') {
+      return <ForgotPasswordForm initialEmail={newEmail} onBack={showLogin} />;
     }
     if (view === 'register') {
       return (
@@ -80,7 +114,11 @@ export default function App() {
     return (
       <>
         {notice && <p className="ok" role="status">{notice}</p>}
-        <LoginForm initialEmail={newEmail} onLoggedIn={(u) => { setNotice(''); setUser(u); }} />
+        <LoginForm
+          initialEmail={newEmail}
+          onLoggedIn={(u) => { setNotice(''); setUser(u); }}
+          onForgotPassword={(email) => { setNewEmail(email); setNotice(''); setView('forgot'); }}
+        />
         <p className="switch">
           New here?{' '}
           <button type="button" className="link" onClick={() => { setNotice(''); setView('register'); }}>
