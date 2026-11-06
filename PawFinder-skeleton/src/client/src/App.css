@@ -137,3 +137,37 @@ code {
   opacity: 0.6;
   cursor: wait;
 }
+
+.switch {
+  margin: 16px 0 0;
+  text-align: center;
+  color: #5b6577;
+}
+
+button.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--navy);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+button.secondary {
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 16px;
+  border: 2px solid var(--navy);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--navy);
+  cursor: pointer;
+}
+
+button.link.forgot {
+  align-self: flex-start;
+  font-weight: 400;
+  font-size: 0.9rem;
+}

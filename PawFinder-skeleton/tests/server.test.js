@@ -27,13 +27,13 @@ function addReport(db, authorId, overrides = {}) {
     .run({ authorId, ...r });
 }
 
-test('schema creates users, reports and report_photos tables', () => {
+test('schema creates the expected tables', () => {
   const db = openDatabase();
   const tables = db
     .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")
     .all()
     .map((row) => row.name);
-  assert.deepEqual(tables.sort(), ['report_photos', 'reports', 'users']);
+  assert.deepEqual(tables.sort(), ['password_resets', 'report_photos', 'reports', 'revoked_tokens', 'users']);
 });
 
 test('a valid report can be saved and read back with its location', () => {
