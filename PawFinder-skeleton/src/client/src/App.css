@@ -154,3 +154,14 @@ button.link {
   text-decoration: underline;
   cursor: pointer;
 }
+
+button.secondary {
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 16px;
+  border: 2px solid var(--navy);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--navy);
+  cursor: pointer;
+}
