@@ -50,6 +50,7 @@ PawFinder is a web application with a React frontend and an Express API backed b
 | `users` | id, name, email (unique), password_hash, phone (private), photo_url, created_at |
 | `reports` | id, author_id, status (Lost / Found / Sighting), species, breed, color, size, markings, description, latitude, longitude, resolved (0/1), created_at |
 | `report_photos` | id, report_id, url |
+| `revoked_tokens` | jti, expires_at (tokens that were logged out before they expired) |
 
 Planned for later tasks: `pets` (PET-01), `conversations` and `messages` (MSG-01, MSG-02), `flags` (SAFE-01), `adoption_listings` (ADOPT-01).
 
@@ -62,6 +63,7 @@ The database enforces these rules: emails are unique, status must be one of the 
 | GET | `/api/health` | Confirms the API and database are working | SETUP-03 |
 | POST | `/api/auth/register` | Create an account (name, email, password) | AUTH-01 |
 | POST | `/api/auth/login` | Log in with email and password, returns a token | AUTH-02 |
+| POST | `/api/auth/logout` | Log out: the token is revoked and stops working immediately | AUTH-03 |
 | GET | `/api/auth/me` | The logged-in user (needs `Authorization: Bearer <token>`) | AUTH-02 |
 | POST | `/api/reports` | Create a report | REP-01 |
 
@@ -72,7 +74,7 @@ The database enforces these rules: emails are unique, status must be one of the 
 - Contact details stay private. Users reach each other only through in-app messages.
 - Only a report's author can edit, delete or resolve it.
 - Resolved reports are hidden from the active map and feed.
-- Login uses JSON Web Tokens (HS256, signed with `JWT_SECRET`, valid for `SESSION_EXPIRY_HOURS`). The browser sends them as `Authorization: Bearer <token>`. The server will not start without a real `JWT_SECRET`.
+- Login uses JSON Web Tokens (HS256, signed with `JWT_SECRET`, valid for `SESSION_EXPIRY_HOURS`). The browser sends them as `Authorization: Bearer <token>`. Logging out stores the token's id in `revoked_tokens`, so it stops working at once. The server will not start without a real `JWT_SECRET`.
 - Wrong password and unknown email return the same error, so the API never reveals which emails have accounts.
 - Passwords are always hashed with bcrypt (`bcryptjs`, cost 10, 8 to 72 bytes long). Secrets live in `.env`, never in git.
 - Distance filtering uses report latitude and longitude.
