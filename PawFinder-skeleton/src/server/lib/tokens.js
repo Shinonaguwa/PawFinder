@@ -8,9 +8,12 @@ function requireSecret(config) {
   return config.jwtSecret;
 }
 
-/** Create a signed session token for a user. Each token has a unique id (jti). */
+/**
+ * Create a signed session token for a user. Each token has a unique id (jti) and
+ * the user's token_version (ver), so resetting a password can end old sessions.
+ */
 export function signToken(user, config) {
-  return jwt.sign({ sub: String(user.id) }, requireSecret(config), {
+  return jwt.sign({ sub: String(user.id), ver: user.token_version ?? 0 }, requireSecret(config), {
     algorithm: ALGORITHM,
     expiresIn: `${config.sessionHours}h`,
     jwtid: randomUUID(),
