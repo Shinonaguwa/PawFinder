@@ -76,3 +76,64 @@ code {
   padding: 1px 6px;
   border-radius: 4px;
 }
+
+.status {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-form h2 {
+  margin: 0;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.auth-form input {
+  font: inherit;
+  font-weight: 400;
+  padding: 10px 12px;
+  border: 1px solid #c9d1de;
+  border-radius: 8px;
+}
+
+.auth-form input[aria-invalid='true'] {
+  border-color: #b3261e;
+}
+
+.auth-form .hint,
+.auth-form .field-error {
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.field-error {
+  color: #b3261e;
+}
+
+.auth-form button {
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--orange);
+  color: #fff;
+  cursor: pointer;
+}
+
+.auth-form button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
