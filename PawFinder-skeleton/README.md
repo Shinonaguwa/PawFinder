@@ -68,7 +68,7 @@ See [docs/team-roles.md](docs/team-roles.md).
    ```bash
    npm install
    ```
-3. Create your local environment file and fill in your own values
+3. Create your local environment file and fill in your own values. Set `JWT_SECRET` to a long random string (the server will not start without it), for example `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
    ```bash
    cp .env.example .env        # Windows PowerShell: Copy-Item .env.example .env
    ```

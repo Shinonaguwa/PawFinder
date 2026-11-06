@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { api, setToken } from './api.js';
 
 /** Log-in form (AUTH-02). Calls onLoggedIn(user) once the server accepts the credentials. */
-export default function LoginForm({ initialEmail = '', onLoggedIn }) {
+export default function LoginForm({ initialEmail = '', onLoggedIn, onForgotPassword }) {
   const [values, setValues] = useState({ email: initialEmail, password: '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -42,6 +42,12 @@ export default function LoginForm({ initialEmail = '', onLoggedIn }) {
         Password
         <input type="password" value={values.password} onChange={update('password')} autoComplete="current-password" />
       </label>
+
+      {onForgotPassword && (
+        <button type="button" className="link forgot" onClick={() => onForgotPassword(values.email)}>
+          Forgot your password?
+        </button>
+      )}
 
       {error && <p className="error" role="alert">{error}</p>}
 

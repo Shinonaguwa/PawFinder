@@ -1,15 +1,21 @@
 import express from 'express';
 import { authRoutes } from './routes/auth.js';
+import { consoleMailer } from './lib/mailer.js';
 
 /**
  * Build the Express app. The database is passed in so tests can use an
  * in-memory database instead of the real file. `options` can override the
- * JWT_SECRET and SESSION_EXPIRY_HOURS settings (also used by tests).
+ * JWT_SECRET, SESSION_EXPIRY_HOURS, APP_URL and RESET_TOKEN_MINUTES settings and
+ * provide a `sendMail` function (also used by tests).
  */
 export function createApp(db, options = {}) {
   const config = {
     jwtSecret: options.jwtSecret ?? process.env.JWT_SECRET,
     sessionHours: options.sessionHours ?? (Number(process.env.SESSION_EXPIRY_HOURS) || 24),
+    // Password reset emails (AUTH-04)
+    appUrl: (options.appUrl ?? process.env.APP_URL ?? 'http://localhost:5173').replace(/\/+$/, ''),
+    resetMinutes: options.resetMinutes ?? (Number(process.env.RESET_TOKEN_MINUTES) || 60),
+    sendMail: options.sendMail ?? consoleMailer,
   };
 
   const app = express();

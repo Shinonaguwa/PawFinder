@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT    NOT NULL,          -- never store plain passwords (AUTH-01)
   phone         TEXT,                      -- private: never returned to other users
   photo_url     TEXT,
+  token_version INTEGER NOT NULL DEFAULT 0, -- bumped on password reset to end all existing sessions
   created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -38,6 +39,17 @@ CREATE TABLE IF NOT EXISTS report_photos (
 CREATE TABLE IF NOT EXISTS revoked_tokens (
   jti        TEXT    PRIMARY KEY,
   expires_at INTEGER NOT NULL              -- Unix time in seconds, copied from the token's exp claim
+);
+
+-- One-time password reset links (AUTH-04). Only a hash of the token is stored,
+-- so a leaked database cannot be used to reset anyone's password.
+CREATE TABLE IF NOT EXISTS password_resets (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT    NOT NULL UNIQUE,
+  expires_at INTEGER NOT NULL,             -- Unix time in seconds
+  used_at    INTEGER,                      -- set once the link has been used
+  created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_reports_author   ON reports(author_id);

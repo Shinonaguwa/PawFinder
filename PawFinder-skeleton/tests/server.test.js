@@ -33,7 +33,7 @@ test('schema creates the expected tables', () => {
     .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")
     .all()
     .map((row) => row.name);
-  assert.deepEqual(tables.sort(), ['report_photos', 'reports', 'revoked_tokens', 'users']);
+  assert.deepEqual(tables.sort(), ['password_resets', 'report_photos', 'reports', 'revoked_tokens', 'users']);
 });
 
 test('a valid report can be saved and read back with its location', () => {
