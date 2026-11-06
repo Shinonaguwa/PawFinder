@@ -33,6 +33,18 @@ export default function App() {
       });
   }, [user]);
 
+  async function handleLogout() {
+    try {
+      await api('/auth/logout', { method: 'POST' });
+    } catch {
+      // Even if the server cannot be reached, the person asked to log out on this device.
+    }
+    clearToken();
+    setNotice('You have been logged out.');
+    setView('login');
+    setUser(null);
+  }
+
   function handleRegistered(created) {
     setNewEmail(created.email);
     setNotice('Account created. Log in to continue.');
@@ -46,6 +58,9 @@ export default function App() {
         <>
           <h2>Welcome, {user.name}!</h2>
           <p className="ok">You are logged in as {user.email}.</p>
+          <button type="button" className="secondary" onClick={handleLogout}>
+            Log out
+          </button>
         </>
       );
     }
