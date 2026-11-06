@@ -137,3 +137,20 @@ code {
   opacity: 0.6;
   cursor: wait;
 }
+
+.switch {
+  margin: 16px 0 0;
+  text-align: center;
+  color: #5b6577;
+}
+
+button.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--navy);
+  text-decoration: underline;
+  cursor: pointer;
+}

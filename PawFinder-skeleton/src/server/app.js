@@ -3,9 +3,15 @@ import { authRoutes } from './routes/auth.js';
 
 /**
  * Build the Express app. The database is passed in so tests can use an
- * in-memory database instead of the real file.
+ * in-memory database instead of the real file. `options` can override the
+ * JWT_SECRET and SESSION_EXPIRY_HOURS settings (also used by tests).
  */
-export function createApp(db) {
+export function createApp(db, options = {}) {
+  const config = {
+    jwtSecret: options.jwtSecret ?? process.env.JWT_SECRET,
+    sessionHours: options.sessionHours ?? (Number(process.env.SESSION_EXPIRY_HOURS) || 24),
+  };
+
   const app = express();
   app.use(express.json());
 
@@ -21,7 +27,7 @@ export function createApp(db) {
     });
   });
 
-  app.use('/api/auth', authRoutes(db)); // AUTH-01, AUTH-02
+  app.use('/api/auth', authRoutes(db, config)); // AUTH-01, AUTH-02
   // More feature routes plug in here, for example:
   //   app.use('/api/reports', reportRoutes(db)); // REP-01 ... REP-04
 
