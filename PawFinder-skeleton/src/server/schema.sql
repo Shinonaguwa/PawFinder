@@ -33,6 +33,13 @@ CREATE TABLE IF NOT EXISTS report_photos (
   url       TEXT    NOT NULL
 );
 
+-- Session tokens that were logged out before they expired (AUTH-03).
+-- Rows can be deleted once expires_at has passed: the token is invalid by then anyway.
+CREATE TABLE IF NOT EXISTS revoked_tokens (
+  jti        TEXT    PRIMARY KEY,
+  expires_at INTEGER NOT NULL              -- Unix time in seconds, copied from the token's exp claim
+);
+
 CREATE INDEX IF NOT EXISTS idx_reports_author   ON reports(author_id);
 CREATE INDEX IF NOT EXISTS idx_reports_status   ON reports(status, resolved);
 CREATE INDEX IF NOT EXISTS idx_reports_location ON reports(latitude, longitude);
