@@ -14,6 +14,7 @@ export function publicUser(row) {
  *   POST /register   AUTH-01  create an account
  *   POST /login      AUTH-02  exchange email + password for a session token
  *   GET  /me         AUTH-02  the logged-in user (used to restore a session)
+ *   POST /logout     AUTH-03  end the session: the token stops working immediately
  */
 export function authRoutes(db, config) {
   const router = Router();
@@ -91,6 +92,18 @@ export function authRoutes(db, config) {
 
   router.get('/me', requireAuth(db, config), (req, res) => {
     res.json({ user: publicUser(req.user) });
+  });
+
+  router.post('/logout', requireAuth(db, config), (req, res, next) => {
+    try {
+      const { jti, exp } = req.auth;
+      db.prepare('INSERT OR IGNORE INTO revoked_tokens (jti, expires_at) VALUES (?, ?)').run(jti, exp);
+      // Tidy up: revoked tokens that have expired anyway no longer need a row.
+      db.prepare('DELETE FROM revoked_tokens WHERE expires_at < ?').run(Math.floor(Date.now() / 1000));
+      return res.status(204).end();
+    } catch (err) {
+      return next(err);
+    }
   });
 
   return router;
