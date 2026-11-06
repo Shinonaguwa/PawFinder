@@ -8,12 +8,44 @@ export class ApiError extends Error {
   }
 }
 
+// The session token is kept in localStorage so a page refresh does not log the user out.
+const TOKEN_KEY = 'pawfinder_token';
+
+export function getToken() {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setToken(token) {
+  try {
+    localStorage.setItem(TOKEN_KEY, token);
+  } catch {
+    /* storage unavailable: the user stays logged in until the page is closed */
+  }
+}
+
+export function clearToken() {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* nothing to clear */
+  }
+}
+
 export async function api(path, { method = 'GET', body } = {}) {
+  const headers = {};
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   let res;
   try {
     res = await fetch(`/api${path}`, {
       method,
-      headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
+      headers,
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
