@@ -2,87 +2,67 @@
 
 ## Overview
 
-PawFinder is a web application with a React frontend and an Express API backed by a SQLite database.
+PawFinder uses a React frontend and a Java Spring Boot REST API backed by MySQL.
 
-```
- Browser / mobile web
-        |
-        v
-  React + Vite (src/client)         port 5173 in development
-        |  fetch('/api/...')  (Vite proxies /api to the server)
-        v
-  Express API (src/server)          port 3000
-        |
-        +----> SQLite file (data/pawfinder.db)
-        +----> uploads/ folder (report photos, from REP-01b)
-        +----> Map tiles from OpenStreetMap via Leaflet (from REP-01c)
+```text
+Browser
+  |
+  v
+React + Vite (src/client)                  port 5173 in development
+  | fetch('/api/...') through Vite proxy
+  v
+Spring Boot + Spring Security (src/server) port 3000
+  |
+  v
+MySQL 8 (pawfinder database)
 ```
 
 ## Technology decisions
 
 | Layer | Decision | Reason |
 |---|---|---|
-| Frontend | React 18 + Vite | Fast to start, widely known, hot reload |
-| Backend | Node.js + Express | Same language as the frontend, simple REST API |
-| Database | SQLite via better-sqlite3 | Zero setup, one file, enough for the project scope. Location filtering uses latitude/longitude columns |
-| Realtime chat | Polling first, upgrade to WebSockets if time allows (MSG-02) | Keeps the first version simple |
-| Maps | Leaflet + OpenStreetMap | No API key needed |
-| Image storage | Local `uploads/` folder | No cloud account needed |
-| Tests | Node built-in runner (`node --test`) | No extra dependencies |
-| Hosting | Not decided (local only for the course demo) | |
+| Frontend | React 18 + Vite | Component-based UI and fast development |
+| Backend | Java 21 + Spring Boot 3 | Required Java stack with mature REST support |
+| Security | Spring Security, JWT and BCrypt | Stateless API authentication and password hashing |
+| Persistence | Spring Data JPA + Hibernate | Repository abstraction and MySQL mapping |
+| Database | MySQL 8 | Required persistent relational database |
+| Build | Maven | Required repeatable Java build |
+| Tests | JUnit 5, MockMvc and H2 MySQL mode | Fast API integration tests without changing production MySQL data |
 
 ## Repository layout
 
 | Path | Purpose |
 |---|---|
-| `package.json` | Root workspace: one `npm install` installs client and server |
-| `src/server/app.js` | Builds the Express app (routes are added here) |
-| `src/server/db.js` | Opens SQLite and applies `schema.sql` |
-| `src/server/schema.sql` | Database tables and indexes |
-| `src/server/index.js` | Starts the server using `.env` settings |
-| `src/client/src/App.jsx` | Root React component |
-| `tests/` | Automated tests, run with `npm test` |
+| `src/server/pom.xml` | Maven build and Java dependencies |
+| `src/server/src/main/java/com/pawfinder` | Spring Boot application and API code |
+| `src/server/src/main/resources/application.properties` | Environment-based MySQL and auth configuration |
+| `src/server/src/test` | Spring Boot integration tests |
+| `src/client` | React and Vite frontend |
 
-## Data model (implemented in `schema.sql`)
+## Authentication API
 
-| Table | Key fields |
-|---|---|
-| `users` | id, name, email (unique), password_hash, phone (private), photo_url, token_version, created_at |
-| `reports` | id, author_id, status (Lost / Found / Sighting), species, breed, color, size, markings, description, latitude, longitude, resolved (0/1), created_at |
-| `report_photos` | id, report_id, url |
-| `password_resets` | id, user_id, token_hash, expires_at, used_at (one-time reset links, only a hash of the token is stored) |
-| `revoked_tokens` | jti, expires_at (tokens that were logged out before they expired) |
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/health` | Confirm API and database access |
+| POST | `/api/auth/register` | Create an account |
+| POST | `/api/auth/login` | Return a signed JWT and public user data |
+| GET | `/api/auth/me` | Restore the user from a bearer token |
+| POST | `/api/auth/logout` | Revoke the current bearer token |
+| POST | `/api/auth/forgot-password` | Create and deliver a one-time reset link |
+| POST | `/api/auth/reset-password` | Change a password with a reset token |
 
-Planned for later tasks: `pets` (PET-01), `conversations` and `messages` (MSG-01, MSG-02), `flags` (SAFE-01), `adoption_listings` (ADOPT-01).
+## Security rules
 
-The database enforces these rules: emails are unique, status must be one of the three values, coordinates must be valid, and a report must belong to an existing user.
+- Passwords are BCrypt hashes and are never returned by the API.
+- Emails are normalized to lowercase and uniquely constrained in MySQL.
+- JWTs contain a unique ID and account token version.
+- Logout stores the JWT ID in `revoked_tokens`, invalidating it immediately.
+- Password reset stores only a SHA-256 hash of the random token.
+- Reset tokens are one-time, expire, and only the newest link remains valid.
+- Changing a password increments the user's token version, invalidating all earlier sessions.
+- Forgot-password responses are identical for known and unknown addresses.
+- Real secrets and MySQL credentials come from environment variables and are not committed.
 
-## API
+## Email delivery
 
-| Method | Path | Purpose | Task |
-|---|---|---|---|
-| GET | `/api/health` | Confirms the API and database are working | SETUP-03 |
-| POST | `/api/auth/register` | Create an account (name, email, password) | AUTH-01 |
-| POST | `/api/auth/login` | Log in with email and password, returns a token | AUTH-02 |
-| POST | `/api/auth/forgot-password` | Email a one-time reset link (same answer for unknown emails) | AUTH-04 |
-| POST | `/api/auth/reset-password` | Set a new password with the link's token | AUTH-04 |
-| POST | `/api/auth/logout` | Log out: the token is revoked and stops working immediately | AUTH-03 |
-| GET | `/api/auth/me` | The logged-in user (needs `Authorization: Bearer <token>`) | AUTH-02 |
-| POST | `/api/reports` | Create a report | REP-01 |
-
-`/api/health` and the `/api/auth/` endpoints above exist so far. The rest are planned.
-
-## Key design rules
-
-- Contact details stay private. Users reach each other only through in-app messages.
-- Only a report's author can edit, delete or resolve it.
-- Resolved reports are hidden from the active map and feed.
-- Login uses JSON Web Tokens (HS256, signed with `JWT_SECRET`, valid for `SESSION_EXPIRY_HOURS`). The browser sends them as `Authorization: Bearer <token>`. Logging out stores the token's id in `revoked_tokens`, so it stops working at once. The server will not start without a real `JWT_SECRET`.
-- Password reset links work once, expire after `RESET_TOKEN_MINUTES`, and only the newest link works. Resetting a password raises `token_version`, which ends every existing session. There is no email provider yet: reset emails are printed to the server console (`src/server/lib/mailer.js`). Pass a real `sendMail` function to `createApp()` to send them.
-- Wrong password and unknown email return the same error, so the API never reveals which emails have accounts.
-- Passwords are always hashed with bcrypt (`bcryptjs`, cost 10, 8 to 72 bytes long). Secrets live in `.env`, never in git.
-- Distance filtering uses report latitude and longitude.
-
-## Open questions
-
-- Will chat stay on polling or move to WebSockets?
+Development reset emails are printed to the API console by `ConsoleMailService`. Production should supply another `MailService` implementation backed by SMTP or an email provider.

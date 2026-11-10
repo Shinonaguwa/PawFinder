@@ -16,6 +16,7 @@ __pycache__/
 
 # Build output
 dist/
+target/
 build/
 out/
 .next/
