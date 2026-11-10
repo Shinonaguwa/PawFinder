@@ -2,107 +2,74 @@
 
 A community platform that reunites lost pets with their families and, later, helps pets find new homes.
 
-**Task board:** https://trello.com/b/QrjdinLI/pawfinder
-**Repository:** <paste GitHub URL here>
+## Implemented authentication
 
-## Problem
+- Account registration (AUTH-01)
+- Login and session restoration with JWT (AUTH-02)
+- Immediate token revocation on logout (AUTH-03)
+- One-time password reset links (AUTH-04)
 
-When a pet goes missing, owners rely on scattered social media posts and flyers. People who spot a stray have no easy way to tell the owner. PawFinder puts lost, found and sighting reports in one searchable, location-based place.
-
-## Users
-
-| User | Need |
-|---|---|
-| Pet owner | Report a lost pet and get notified of nearby sightings |
-| Finder / spotter | Report a found pet or sighting and contact the owner safely |
-| Community member | Browse nearby reports on a map and feed |
-| Admin | Review flagged content and remove spam |
-
-## Features
-
-**MVP**
-- Register, log in and log out (AUTH-01, AUTH-02)
-- Post, view, edit, delete and resolve Lost / Found / Sighting reports with photos and a map pin (REP-01 to REP-04)
-- Interactive map and local feed of nearby reports (DISC-01, DISC-02)
-- Filter by status, date and distance (SRCH-01)
-- In-app messaging that keeps phone numbers private (MSG-01, MSG-02)
-
-**Next:** profile management, pet records, trait filters, sighting alerts, abuse reporting.
-**Later:** pet adoption listings and inquiries.
-
-Full backlog with user stories and acceptance criteria: [docs/requirements.md](docs/requirements.md)
-
-## Tech stack
+## Technology stack
 
 | Layer | Choice |
 |---|---|
 | Frontend | React 18 + Vite |
-| Backend / API | Node.js + Express |
-| Database | SQLite (via better-sqlite3) |
-| Maps | Leaflet + OpenStreetMap (no API key; added in REP-01c) |
-| Photo storage | Local `uploads/` folder (added in REP-01b) |
-| Tests | Node's built-in test runner (`node --test`) |
+| Backend | Java 21 + Spring Boot 3 |
+| Security | Spring Security + JWT + BCrypt |
+| Database | MySQL 8 through Spring Data JPA |
+| Build | Maven |
+| Tests | JUnit 5, MockMvc and H2 in MySQL compatibility mode |
 
-Details and data model: [docs/architecture.md](docs/architecture.md)
+## Requirements
 
-## Team
+- Java 21 or newer
+- Maven 3.9 or newer
+- Node.js 20 or newer
+- MySQL 8
 
-| Name | Role |
-|---|---|
-| Member A | <name> |
-| Member B | <name> |
-| Member C | <name> |
+## Local setup
 
-See [docs/team-roles.md](docs/team-roles.md).
-
-## Setup
-
-**Requirements:** [Node.js](https://nodejs.org) 20 or newer (check with `node --version`).
-
-1. Clone the repository
-   ```bash
-   git clone <repository-url>
-   cd PawFinder
+1. Clone the repository and enter `PawFinder-skeleton`.
+2. Create the database if your MySQL account cannot create it automatically:
+   ```sql
+   CREATE DATABASE pawfinder CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
-2. Install dependencies for the whole project
+3. Configure the environment using `.env.example` as a reference. Spring Boot reads the listed variables directly from your shell or IDE launch configuration. `JWT_SECRET` is required and must contain at least 32 bytes.
+4. Install the frontend dependencies:
    ```bash
-   npm install
+   npm install --prefix src/client
    ```
-3. Create your local environment file and fill in your own values. Set `JWT_SECRET` to a long random string (the server will not start without it), for example `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+5. Start the API:
    ```bash
-   cp .env.example .env        # Windows PowerShell: Copy-Item .env.example .env
+   mvn -f src/server/pom.xml spring-boot:run
    ```
-4. Create the database (optional, because the server also does this on startup)
-   ```bash
-   npm run db:init
-   ```
-5. Start the app (API on port 3000, website on port 5173)
+6. In a second terminal, start the website:
    ```bash
    npm run dev
    ```
-6. Open http://localhost:5173. The page should say "API is running".
+7. Open http://localhost:5173. Vite forwards `/api` calls to Spring Boot on port 3000.
 
-### Useful commands
+## Useful commands
 
-| Command | What it does |
+| Command | Purpose |
 |---|---|
-| `npm run dev` | Start the API and the website together |
-| `npm test` | Run the automated tests |
-| `npm run build` | Build the website for production |
-| `npm run db:init` | Create the database file and tables |
+| `mvn -f src/server/pom.xml test` | Run backend tests |
+| `mvn -f src/server/pom.xml package` | Build the Spring Boot JAR |
+| `npm run dev` | Start the React development server |
+| `npm run build` | Build the React frontend |
 
-## Workflow
+## Password-reset email
 
-Work is tracked on the task board. Every card links to a GitHub issue, a `feature/<issue>-<short-name>` branch and a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md).
+The development mail service prints reset messages and links to the Spring Boot console. Replace `ConsoleMailService` with an SMTP-backed `MailService` implementation before production use.
 
 ## Project structure
 
-```
-.github/        Issue and pull request templates
-docs/           Requirements, architecture, team roles
+```text
 src/
-  client/       React website (Vite)
-  server/       Express API, SQLite schema (schema.sql)
-tests/          Automated tests
-data/           Local SQLite database (created at runtime, not committed)
+  client/                         React website
+  server/
+    pom.xml                       Maven project
+    src/main/java/com/pawfinder/ Spring Boot API
+    src/main/resources/          Spring configuration
+    src/test/                    Backend integration tests
 ```
